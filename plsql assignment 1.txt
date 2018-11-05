@@ -1,0 +1,283 @@
+1)
+    a:   declare v_id number(4);//    it is a valid declaration.
+    
+    b:   declare v_x,v_y,v_z varchar(10);//  it is not a valid declaration because Each variable declaration is a separate 
+                                             statement and must be terminated by a semicolon.
+ 
+    c:    declare v_birthdate date not null; // it is not a valid declaration 
+                                                because When a variable is specified as NOT NULL, you must initialize the variable when it is declared.
+   
+    d:   declare v_in_stock boolean :=1;    // it is not a valid declaration because we can onlt assign logical values.
+==============================================================================================================================
+2)     DECLARE
+		v_data NUMBER(7);
+	BEGIN
+		DBMS_OUTPUT.PUT_LINE(v_data);
+	END;
+         
+    The anonymous block will run successfully and statement processed will be shown as  output as value is assigned to th variable ;
+===============================================================================================================================
+3) DECLARE
+  v_weight number(3):=600;
+  v_message varchar2(255):='Product 10012';
+
+BEGIN
+
+  DECLARE
+    v_weight number(3):=1;
+    v_message varchar2(25):='Product 11001';
+    v_new_locn varchar2(25):='Europe';
+  BEGIN
+    v_weight:=v_weight+1;
+    v_new_locn:='Western'||v_new_locn;
+
+    dbms_output.put_line(v_weight||' '||v_message||' '||v_new_locn);
+
+  END;
+
+v_weight := v_weight+1;
+v_message:=v_message||' is in stock';
+dbms_output.put_line(v_weight||' '||v_message||' '||v_new_locn);
+
+END;
+
+//OUTPUT
+
+AT POINT 1 :
+2 Product 11001 Western Europe
+
+AT POINT 2 :
+ORA-06550: line 21, column 53:
+PLS-00201: identifier 'V_NEW_LOCN' must be declared
+ORA-06550: line 21, column 1:
+PL/SQL: Statement ignored
+1. DECLARE
+2.   v_weight number(3):=600;
+3.   v_message varchar2(255):='Product 10012';
+4. BEGIN
+
+----------------------------------------------
+4) declare 
+a number(4);
+b number(4);
+non_zero exception;
+c number(4,2);
+begin
+a := :a;
+b := :b;
+
+if (a<=0 or b<=0) then
+ raise non_zero;
+
+else
+
+c := a/b + b;
+end if;
+
+
+dbms_output.put_line(c);
+
+exception
+
+when non_zero then
+dbms_output.put_line('Non Zero Exception');
+
+end;
+
+===============================================================================
+5)
+declare
+max_salary employee.salary%type;
+min_salary employee.salary%type;
+dno employee.deptno%type;
+begin
+dno:=:dno;
+select deptno,max(salary),min(salary) into dno,max_salary,min_salary from employee group by deptno having deptno=dno;
+dbms_output.put_line('Department No.: '||dno);
+dbms_output.put_line('Minimum Salary: '||min_salary);
+dbms_output.put_line('Maximum Salary: '||max_salary);
+end;
+------------------------------------
+6)
+declare
+empid employee.empno%type;
+sal employee.salary%type;
+begin
+empid:=:empid;
+select salary into sal from employee where empno=empid;
+if(sal<20000) then
+   dbms_output.put_line('Salary '||sal||' is of LOW Class');
+elsif(sal=20000) then
+   dbms_output.put_line('Salary '||sal||' is of MEDIUM Class');
+elsif(sal>20000) then
+   dbms_output.put_line('Salary '||sal||' is of HIGH Class');
+end if;
+end;
+-------------------------------------------------
+7) DECLARE
+  month number;
+  invalid_month exception;
+BEGIN
+
+month:=:month;
+if(month<1 and month>12) then
+raise invalid_month;
+
+else
+dbms_output.put_line(TO_CHAR(TO_DATE(month, 'MM'), 'Month'));
+
+
+  
+end if;
+
+EXCEPTION
+WHEN invalid_month THEN
+dbms_output.put_line('Please enter valid month');
+ 
+END;
+--------------------------------
+8 a)
+
+DECLARE
+  n number;
+  fact number:=1;
+  not_positive exception;
+BEGIN
+
+n:=:n;
+
+if (n>0) then
+  for i in 1..n
+    loop
+    fact:=fact*i;
+    end loop;
+
+  dbms_output.put_line(fact);
+else
+raise not_positive;
+end if;
+
+exception
+when not_positive then
+dbms_output.put_line('Please enter a positive number');
+ 
+END;
+-------------------------
+8 b)DECLARE
+  n number;
+  first number;
+  second number;
+  third number;
+  not_positive exception;
+BEGIN
+first:=0;
+second:=1;
+third:=0;
+n:=:n;
+
+if (n>0) then
+ for i in 1..n
+ loop
+        
+        dbms_output.put_line(third);
+third:=first+second;
+        first:=second;
+        second:=third;
+    end loop;
+  
+else
+raise not_positive;
+end if;
+
+exception
+when not_positive then
+dbms_output.put_line('Please enter a positive number');
+ 
+END;
+
+
+------------------------ 
+
+
+
+
+8) C)
+declare
+a number(5):= 0;
+b number(5):= 1; 
+c number(5);
+n number(5);
+i number(5):=3;
+negative_value exception;
+begin
+n:=:n;
+if(n<0) then
+raise negative_value;
+elsif(n=1) then
+ dbms_output.put(a);
+elsif(n>=2) then
+  dbms_output.put(a||' '||b);
+end if;
+while(i<=n)
+loop
+c:=b+a;
+ if(c<=n) then
+ dbms_output.put(' '||c);
+ end if;
+a:=b;
+b:=c;
+i:=i+1;
+end loop;
+dbms_output.new_line;
+Exception 
+   WHEN negative_value THEN
+dbms_output.put_line('You must enter positive number.');
+end;
+
+
+
+-------------------------------------------------------------------
+
+
+
+9)  declare 
+  type mydatatype is record
+  (
+    mname member.member_name%type,
+    mfee member.fees_paid%type,
+    bno    issue.book_no%type,
+    bid    issue.lib_issue_id%type
+   );
+   mainvar mydatatype;
+   memname member.member_name%type;
+begin 
+      memname := :memname;
+     select m.member_name,m.fees_paid,i.book_no,i.lib_issue_id into mainvar.mname,mainvar.mfee,mainvar.bno,mainvar.bid from member m inner join issue i on m.member_id=i.member_id where m.member_name = memname;
+      dbms_output.put_line('name of the employee is '|| mainvar.mname);
+      dbms_output.put_line('fee of the employee is '|| mainvar.mfee|| 'issue id of the member is '|| mainvar.bid);
+
+  end; 
+===============================================================================================
+10)
+   select * from books
+declare 
+  bname books.book_name%type;
+  incr  books.book_no%type;
+  aname books.author_name%type; 
+  bcat  books.category%type ;
+  bcost books.cost%type;
+  newbno books.book_no%type;
+begin 
+     select  max(book_no) into incr from books;
+       newbno := incr+1;
+       bname := :bname;
+       aname := :aname;
+       bcost := :bcost;
+       bcat  := :bcat;
+  insert into books values(
+       newbno,bname,aname,bcost,bcat
+);
+        
+ end; 
+
+ =====================================

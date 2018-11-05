@@ -1,0 +1,99 @@
+Query 1:
+
+create or replace trigger TR_CHECK_DEPT
+before delete or update or insert on dept
+for each row
+when (to_char(sysdate, 'mm') != 'mar')
+declare
+begin
+SECURE_DML;
+end;
+
+create or replace procedure SECURE_DML
+is
+begin
+RAISE_APPLICATION_ERROR( -20001, 'You can modify or add a department only at the end of a financial year' );
+end;
+
+insert into dept values(106,'Testing','Bangalore');
+
+You can modify or add a department only at the end of a financial year
+
+0.02 seconds
+
+Query 2:
+
+create or replace trigger TR_CASCADE_CHANGE
+ after update of deptno on dept for each row
+begin 
+update emp
+       set deptno =:new.deptno
+     where deptno = :old.deptno;
+END;
+
+update dept set deptno=108 where deptno=103;
+
+1003Vinesh15000108
+Query 3:
+//here Salesman is replaced with devlopment in designation category 
+create or replace trigger TR_CHECK_COMMISSION
+before update on emp for each row
+declare 
+comm int;
+dep varchar2(20);
+begin 
+select commission into comm from emp where dname = 'Devlopment'; 
+ if(comm < 100) then
+   dbms_output.put_line("Please enter Commission greater than 100");
+ else
+   update emp set commission = comm+2000 where dname =’Devlopment’;
+
+END;
+
+
+
+
+
+Query 4:
+
+create or replace trigger TR_VALIDATE_SAL
+before insert on emp for each row
+declare 
+grade varchar2(20);
+l_salary emp.salary%type;
+h_salary emp.salary%type;
+
+begin 
+select grd into grade from emp where eid = old.eid;
+select lowsal into l_salary and highsal into h_salary from SALGRADE where sgrade = grade  
+
+
+ if(new.salary < lowsal) then
+   dbms_output.put_line("Salary below the lowest paygrade");
+ elsif (new.salary > lowsal and new.salary < highsal) then
+   dbms_output.put_line("Salary lies between valid Salary Range");
+ else
+   dbms_output.put_line("Salary above the Highest paygrade");
+END;
+
+
+Query 5:
+
+create or replace trigger TR_CHECK_GRADE
+before update of grade on emp for each row
+declare 
+grade emp.grade%type;
+o_salary emp.salary%type;
+n_salary emp.salary%type;
+begin 
+select salary into n_salary from salgrade where grade = new.grade;
+slect salary into o_salary from salgrade where grade =old.grade;
+if(grade!= old.grade)
+ insert into emplog values(empid,grade,o_salary,n_salary);
+else
+ dbms_output.put_line("Grade not changed");
+
+
+END;
+
+Query 6:

@@ -1,0 +1,206 @@
+1) create or replace procedure inc(dno employee.deptno%type)
+is
+var_rows number;
+cursor mycur is select empno, salary from employee where deptno=dno;
+begin
+for cur in mycur
+loop
+   update employee set salary = cur.salary+cur.salary*0.1 where deptno = dno;
+
+end loop;
+var_rows := SQL%ROWCOUNT;
+dbms_output.put_line(var_rows||' rows updated');
+
+end;
+
+--DECLARE
+declare
+dno number;
+begin
+ dno:=:dno;
+ inc(dno);
+end;
+--------------------------
+2 a) create or replace procedure dis
+is
+cursor mycur is select empno,ename,salary from employee where rownum<=5;
+eno employee.empno%type;
+en employee.ename%type;
+salary employee.salary%type;
+begin
+    
+   
+
+      OPEN mycur;
+    loop
+   FETCH mycur INTO eno,en,salary;
+      EXIT WHEN mycur%NOTFOUND;
+
+   dbms_output.put_line(eno||' '||en||' '||salary);
+
+  
+   end loop;
+
+   CLOSE mycur;
+
+end;
+
+declare
+begin
+dis;
+end;
+-------------
+2 b) create or replace procedure dis
+is
+cursor mycur is select empno,ename,salary from salgrade where rownum<=5;
+
+begin
+        
+for cur in mycur
+loop
+dbms_output.put_line(cur.empno||' '||cur.ename||' '||cur.salary);
+end loop;
+
+end;
+
+declare
+begin
+dis;
+end;
+-------------------
+2 c)create or replace procedure dis
+is
+cursor mycur is select empno,ename,salary from employee where rownum<=5;
+eno employee.empno%type;
+en employee.ename%type;
+sal employee.salary%type;
+begin
+
+    OPEN mycur;
+
+   FETCH mycur INTO eno,en,sal;
+
+
+while mycur%FOUND
+   loop
+   dbms_output.put_line(eno||' '||en||' '||sal);  
+   FETCH mycur INTO eno,en,sal;
+
+   end loop;
+   CLOSE mycur;
+end;
+
+declare
+begin
+dis;
+end;
+----------------------------------
+
+5) Declare 
+   flag number(2);
+ cursor cur is
+  select * from books;
+  
+         
+begin   
+    
+       for xur in cur 
+        loop
+           
+                 if(xur.category='cs' and xur.cost=500 ) then 
+                                 
+                 update books set cost=cost+cost*0.2 where book_no=xur.book_no;
+                
+                
+            
+           end if;
+
+end loop;
+end; 
+===================================================================
+
+7) create table message(err_message varchar2(250))
+select * from message
+delete from message
+select * from employee
+desc message
+
+
+declare 
+sal employee.salary%TYPE;
+name employee.ename%TYPE;
+c number(10);
+too_many_values exception;
+no_data_found exception;
+others exception;
+begin
+sal:=:sal;
+select nvl(COUNT(salary) ,0) into c from employee group by salary having salary=sal;
+if(c>1) then
+raise too_many_values;
+elsif(c=0) then
+raise no_data_found;
+elsif(c=1) then
+select ename into name from employee where salary=sal;
+dbms_output.put_line(name);
+insert into message values(name);
+else
+raise others;
+end if;
+Exception
+when too_many_values then
+insert into message values('More than one employee with '||sal);
+when no_data_found then
+insert into message values('No employee with '||sal);
+when others then
+insert into message values('Some other error occurred');
+end;
+
+
+
+create sequence msg_seq
+start with 1
+increment by 1;
+
+select nvl(count(salary),0) from employee group by salary having salary=50000
+-----------------------------------------------------
+3)
+  declare 
+        Cursor cur is 
+         select * from employee where jobtype='Developer';
+  begin 
+        for xur in cur 
+          loop
+              dbms_output.put_line('Employee name is : '||xur.empname||'    Employee salary is : '||xur.salary);
+end loop;
+end;
+=========================================================================================
+4)
+declare 
+       Cursor cur(jjb employee.jobtype%type) is
+          select * from employee where jobtype=jjb;
+    begin
+           for xur in cur(:job)
+              loop
+ dbms_output.put_line('Employee Department number is :  '||xur.dptno||'Employee name is : '||xur.empname||'    Employee salary is : '||xur.salary);
+   end loop;
+end;  
+=========================================================================================
+6)
+
+DECLARE
+no number;
+name dept.dptname%type;
+begin
+       no :=:deptno;
+       select dptname into name from dept where dptno=no;
+       dbms_output.put_line('                    Department no is: '||no||'    Department name is : '||name); 
+
+   for xur in (select empname,empno,salary,jobtype from employee natural join dept where dptno=no)
+    loop
+ dbms_output.put_line('Employee no : '||xur.empno||'    Employee name : '||xur.empname||'    Salary is : '||xur.salary||'    Employee job is : '||xur.jobtype);
+end loop;
+end;
+
+============================================================================================
+

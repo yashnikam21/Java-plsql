@@ -1,0 +1,239 @@
+1)
+CREATE OR REPLACE PROCEDURE USER_QUERY_EMP(p_myeno IN Employee.empno%type,p_myjob out Dept.dname%type, p_mysal out Employee.salary%type)
+IS
+BEGIN
+
+select d.dname,e.salary into p_myjob,p_mysal from dept d inner join employee e on e.deptno = d.deptno where empno=p_myeno;
+
+
+END;
+--CALLING
+declare
+   title Dept.dname%type;
+   sal  Employee.salary%type;
+   eno  Employee.empno%type;
+BEGIN 
+  eno:=:eno;
+  user_query_emp(eno,title,sal);
+  
+  dbms_output.put_line('Employee number '||eno||'Title '||title||'Salary '||sal);
+
+EXCEPTION 
+   WHEN NO_DATA_FOUND THEN 
+      dbms_output.put_line('No data found exception');
+
+END;
+--------------------------------------------------
+2) alter table employee
+add comm number
+
+update employee set comm = 10000 
+
+update employee set comm = NULL where empno in (333,555,666)
+
+
+
+
+create or replace function USER_ANNUAL_COMP(p_eno Employee.empno%type)
+return employee.comm%type     --return type
+is
+annual_compensation number(10);
+sal Employee.salary%type;
+com Employee.comm%type;
+begin
+    
+select salary, comm into sal,com from employee where empno=p_eno;
+
+IF (sal IS NULL) THEN
+sal:=0;
+ELSIF (com IS NULL) THEN
+com:=0;
+END IF;
+
+annual_compensation:=(sal+com)*12;
+
+
+return annual_compensation;
+end;
+----
+declare
+annual number(10);
+eno Employee.empno%type;
+begin
+eno:=:eno;
+select sum(user_annual_comp(eno)) into annual from dual;
+
+
+dbms_output.put_line('Annual Compensation : '||annual);
+end;
+
+---------------------------------------
+3) 
+Create or replace function USER_VALID_DEPTNO(dno Dept.deptno%type)
+return BOOLEAN    --return type
+is
+ct number:=0;
+begin
+
+select deptno into ct from dept where deptno=dno;
+
+IF (ct>0) THEN
+return true;
+ELSE 
+return false;
+END IF;
+
+END;
+---------
+
+CREATE OR REPLACE PROCEDURE SHOW_STRENGTH(dno IN Employee.deptno%type)
+IS
+cnt number;
+BEGIN
+IF (USER_VALID_DEPTNO(dno)) THEN
+select count(*) into cnt from employee where deptno=dno;
+dbms_output.put_line('There are '||cnt||' employees in department '||dno);
+ELSE
+dbms_output.put_line('Invalid Department Number');
+END IF;
+END;
+--CALLING
+declare
+  
+   dno  Employee.deptno%type;
+BEGIN 
+  dno:=:dno;
+
+show_strength(dno);
+
+END;
+-------------------------------------
+4)CREATE OR REPLACE PROCEDURE SHOW_RECORDS(dt IN employee.dob%type)
+IS
+
+CURSOR emp IS 
+select e.ename,d.dname,e.salary,e.deptno from employee e inner join dept d on d.deptno=e.deptno where dob>dt;
+
+isempty boolean:=true;
+my_rec emp%rowtype;
+
+BEGIN
+
+OPEN emp;
+        FETCH emp INTO my_rec;
+       
+IF (emp%found) then
+isempty:=false;
+END IF;
+
+CLOSE emp;
+
+IF NOT (isempty) THEN
+dbms_output.put_line('employee name     department name      salary       department number');
+for cur in emp
+loop
+dbms_output.put_line(' '||cur.ename||'               '||cur.dname||'           '||cur.salary||'          '||cur.deptno);
+end loop;
+ELSE
+dbms_output.put_line('Error'); 
+END IF;
+
+END;
+
+---
+DECLARE
+join date;
+BEGIN
+join:=:join;
+SHOW_RECORDS(join);
+END;
+-----------------------------------------------------------
+5)
+create or replace procedure bookpr(bname books.book_name%type,aname books.author_name%type,cost books.cost%type,cat books.category%type)
+is
+qty integer;
+
+begin 
+    
+              
+     
+            select count(*) into qty from books where author_name=aname;
+          
+        if(cost>500 or aname!=null  ) then
+         if( qty<=0 ) then 
+               insert into books values(seq.nextval,bname,aname,cost,cat);
+       end if;
+      end if;
+
+end;
+declare
+bname books.book_name%type;
+aname books.author_name%type;
+cost books.cost%type;
+cat books.category%type;
+
+begin 
+      bookpr('quran','bha',700,'spiri');
+end;
+
+create sequence seq
+start with 326
+increment by 1 
+maxvalue 340
+nocycle;
+
+--------------------------------------------
+6) ----FUNCTION
+create or replace function find_sal_grade(sal Employee.salary%type)
+return salgrade.grade%type     --return type
+is
+grad salgrade.grade%type;
+minsal number;
+maxsal number;
+salary_not_in_range exception;
+
+begin
+   select max(salary),min(salary) into maxsal,minsal from salgrade;
+   select distinct grade into grad from salgrade where salary = sal;
+
+  -- dbms_output.put_line(maxsal||' '||minsal);
+
+   IF(sal<minsal and sal>maxsal) THEN
+       grad:='';
+       raise salary_not_in_range;
+   
+   END IF;
+
+RETURN grad;
+
+
+EXCEPTION 
+   WHEN salary_not_in_range THEN 
+      dbms_output.put_line('Salary is out of range');
+
+
+end;
+
+
+----PROCEDURE
+
+CREATE OR REPLACE PROCEDURE CALL_FIND_SAL_GRADE IS
+ cursor mycur is select * from employee;
+ BEGIN
+
+ for cur in mycur
+loop
+dbms_output.put_line(RPAD(cur.ename,10)||'         '||cur.salary||'          '||cur.deptno||'           '||find_sal_grade(cur.salary));
+
+
+end loop;
+
+ END CALL_FIND_SAL_GRADE;
+
+
+---------ANONYMOUS BLOCK
+declare
+begin
+CALL_FIND_SAL_GRADE;
+end;
+--------------------------------------------
